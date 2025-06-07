@@ -2,7 +2,7 @@ use chrono::{Duration, Utc};
 use jsonwebtoken::{self, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Claims {
     pub sub: String,
     pub exp: i64,
@@ -32,4 +32,27 @@ pub fn generate_jwt(
 pub fn validate_jwt(token: &str, secret: &[u8]) -> Result<Claims, jsonwebtoken::errors::Error> {
     let validation = Validation::default();
     decode::<Claims>(token, &DecodingKey::from_secret(secret), &validation).map(|data| data.claims)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn jwt_is_generated() {
+        let permissions = vec![String::from("read")];
+        let test_secret = [u8::MAX, u8::MIN];
+        let test_jwt_reuslt = generate_jwt("test-user", permissions, &test_secret);
+        assert!(test_jwt_reuslt.is_ok());
+    }
+
+    #[test]
+    fn jwt_validate_fails_with_diff_secret() {
+        let permissions = vec![String::from("read")];
+        let test_secret = [u8::MAX, u8::MIN];
+        let bad_test_secret = [1, 2, 3, 4];
+        let jwt = generate_jwt("test-user", permissions, &test_secret);
+        let validate_result = validate_jwt(&jwt.unwrap(), &test_secret);
+        assert!(validate_result.is_err());
+    }
 }
