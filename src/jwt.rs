@@ -52,7 +52,7 @@ mod tests {
         let test_secret = [u8::MAX, u8::MIN];
         let bad_test_secret = [1, 2, 3, 4];
         let jwt = generate_jwt("test-user", permissions, &test_secret);
-        let validate_result = validate_jwt(&jwt.unwrap(), &test_secret);
+        let validate_result = validate_jwt(&jwt.unwrap(), &bad_test_secret);
         assert!(validate_result.is_err());
     }
 }
